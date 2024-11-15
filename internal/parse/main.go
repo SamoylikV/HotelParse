@@ -95,41 +95,59 @@ func Info(resultID string) (map[string]string, error) {
 	req2, _ := http.NewRequest("POST", url2, bytes.NewBuffer(jsonData2))
 	req2.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
-	res2, _ := client.Do(req2)
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			return
-		}
-	}(res2.Body)
 
-	var response2 Response2
-	bodyBytes2, _ := io.ReadAll(res2.Body)
-	err := json.Unmarshal(bodyBytes2, &response2)
+	res2, err := client.Do(req2)
+	if err != nil {
+		return nil, err
+	}
+	if res2.Body == nil {
+		return nil, err
+	}
+	defer func() {
+		_ = res2.Body.Close()
+	}()
+
+	bodyBytes2, err := io.ReadAll(res2.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	var roomCount int
+	var response2 Response2
+	err = json.Unmarshal(bodyBytes2, &response2)
+	if err != nil {
+		return nil, err
+	}
+
 	if len(response2.Content) == 0 {
 		return nil, err
 	}
-	object := response2.Content[0].Objects[0]
-	xsdData := object.XsdData
+
+	object := response2.Content[0]
+	if len(object.Objects) == 0 {
+		return nil, err
+	}
+	firstObject := object.Objects[0]
+	xsdData := firstObject.XsdData
 	classInfo := xsdData.ClassificationInfo
+
+	var roomCount int
 	for _, room := range xsdData.InformationRooms {
-		roomNum, _ := strconv.Atoi(room.InformationRoomsBlock.NumberRooms)
+		roomNum, err := strconv.Atoi(room.InformationRoomsBlock.NumberRooms)
+		if err != nil {
+			return nil, err
+		}
 		roomCount += roomNum
 	}
+
 	return map[string]string{
-		"A": object.HotelName,
+		"A": firstObject.HotelName,
 		"B": xsdData.View,
 		"C": xsdData.Email,
 		"D": xsdData.Phone,
 		"E": xsdData.City,
 		"F": xsdData.SiteUrl,
-		"G": object.Region.Name,
-		"H": object.Region.Code,
+		"G": firstObject.Region.Name,
+		"H": firstObject.Region.Code,
 		"I": classInfo.Order.LicenseNumber,
 		"J": classInfo.Order.DateIssued,
 		"K": classInfo.Order.DateEnd,
