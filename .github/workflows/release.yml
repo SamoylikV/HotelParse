@@ -47,7 +47,8 @@ jobs:
           GOARCH: amd64
           CC: x86_64-w64-mingw32-gcc
         run: |
-          fyne package -os windows -icon "assets/Icon.png" -name "HotelParse.exe"
+          cd cmd
+          fyne package -os windows -icon "../assets/Icon.png" -name "HotelParse.exe"
         shell: /usr/bin/bash -e {0}
 
       - name: Archive the build
