@@ -121,22 +121,6 @@ func Info(resultID string) (map[string]string, error) {
 		roomNum, _ := strconv.Atoi(room.InformationRoomsBlock.NumberRooms)
 		roomCount += roomNum
 	}
-	//return map[string]string{
-	//	"rooms":                      strconv.Itoa(roomCount),
-	//	"name":                       object.HotelName,
-	//	"view":                       xsdData.View,
-	//	"email":                      xsdData.Email,
-	//	"phone":                      xsdData.Phone,
-	//	"city":                       xsdData.City,
-	//	"site":                       xsdData.SiteUrl,
-	//	"region name":                object.Region.Name,
-	//	"region code":                object.Region.Code,
-	//	"license number":             classInfo.Order.LicenseNumber,
-	//	"license date issued":        classInfo.Order.DateIssued,
-	//	"license date end":           classInfo.Order.DateEnd,
-	//	"category stars":             classInfo.CategoryStars,
-	//	"accredit organization name": classInfo.InfoAccredOrganization.AccredOrganizationShortName,
-	//}
 	return map[string]string{
 		"A": object.HotelName,
 		"B": xsdData.View,
