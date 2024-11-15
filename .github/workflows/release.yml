@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     tags:
-      - "v*"  # Триггер при создании тега версии (например, v1.0, v1.1 и т.д.)
+      - "v*"
 
 jobs:
   build:
@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, macos-latest]
-        arch: [amd64, arm64] # Поддержка macOS ARM и Windows x86-64
+        arch: [amd64, arm64]
 
     steps:
       - name: Check out the code
@@ -21,7 +21,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: "1.20" # Укажите необходимую версию Go
+          go-version: "1.22"
 
       - name: Cache Go modules
         uses: actions/cache@v2
@@ -42,10 +42,11 @@ jobs:
           GOARCH: ${{ matrix.arch }}
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            fyne package -os windows -name "HotelParse.exe"
+            fyne package -os windows -icon "assets/Icon.png" -name "HotelParse.exe"
           else
-            fyne package -os darwin -name "HotelParse.app"
+            fyne package -os darwin -icon "assets/Icon.png" -name "HotelParse.app"
           fi
+        shell: /usr/bin/bash -e {0}
 
       - name: Archive the build
         run: |
