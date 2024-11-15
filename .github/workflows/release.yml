@@ -42,9 +42,9 @@ jobs:
           GOARCH: ${{ matrix.arch }}
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            fyne package -os windows -icon "icon.ico" -name "HotelParse.exe"
+            fyne package -os windows -name "HotelParse.exe"
           else
-            fyne package -os darwin -icon "icon.png" -name "HotelParse.app"
+            fyne package -os darwin -name "HotelParse.app"
           fi
 
       - name: Archive the build
