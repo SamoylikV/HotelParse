@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     tags:
-      - "v*"
+      - "v*"  # Триггер при создании тега версии (например, v1.0, v1.1 и т.д.)
 
 jobs:
   build:
@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, macos-latest]
-        arch: [amd64, arm64]
+        arch: [amd64, arm64] # Поддержка macOS ARM и Windows x86-64
 
     steps:
       - name: Check out the code
@@ -21,7 +21,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: "1.22"
+          go-version: "1.20" # Укажите необходимую версию Go
 
       - name: Cache Go modules
         uses: actions/cache@v2
@@ -57,7 +57,7 @@ jobs:
         shell: bash
 
       - name: Upload release asset
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.os }}-${{ matrix.arch }}
           path: |

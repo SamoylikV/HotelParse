@@ -1,4 +1,4 @@
-module HotelParse
+module github.com/SamoylikV/HotelParse
 
 go 1.22
 

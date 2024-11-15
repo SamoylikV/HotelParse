@@ -1,8 +1,8 @@
 package main
 
 import (
-	"HotelParse/internal/ui"
-	"HotelParse/internal/xlsxutils"
+	"github.com/SamoylikV/HotelParse/internal/ui"
+	"github.com/SamoylikV/HotelParse/internal/xlsxutils"
 	"log"
 	"sync"
 )
