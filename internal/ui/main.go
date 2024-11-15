@@ -5,6 +5,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/SamoylikV/HotelParse/internal/parse"
 	"github.com/SamoylikV/HotelParse/internal/xlsxutils"
@@ -55,7 +56,9 @@ func (app_ *MyApp) Run() {
 		go app_.startProcessing()
 	})
 	app_.progressBar = widget.NewProgressBar()
-	content := container.NewVBox(app_.slider, app_.sliderLabel, startButton, app_.progressBar, app_.logText)
+	logContainer := container.New(layout.NewCenterLayout(), app_.logText)
+
+	content := container.NewVBox(app_.slider, app_.sliderLabel, startButton, app_.progressBar, logContainer)
 	window := myApp.NewWindow("Hotel parse")
 	window.Resize(fyne.NewSize(400, 200))
 	window.SetContent(content)
@@ -83,7 +86,7 @@ func (app_ *MyApp) UpdateProgress(completed, total int) {
 		remainingTime = "⏳ Расчет времени невозможен."
 	}
 
-	app_.logs = fmt.Sprintf("✅ Прогресс: %.2f%%\n%s\n", app_.progress*100, remainingTime)
+	app_.logs = remainingTime
 	app_.progressBar.SetValue(app_.progress)
 	app_.logText.SetText(app_.logs)
 }
