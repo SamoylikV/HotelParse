@@ -49,11 +49,13 @@ jobs:
         run: |
           cd cmd
           fyne package -os windows -icon "../assets/Icon.png" -name "HotelParse.exe"
+          ls -al
         shell: /usr/bin/bash -e {0}
 
       - name: Archive the build
         run: |
-          zip -r HotelParse-Windows-amd64.zip HotelParse.exe
+          cd cmd
+          zip -r ../HotelParse-Windows-amd64.zip HotelParse.exe
         shell: bash
 
       - name: Upload release asset
