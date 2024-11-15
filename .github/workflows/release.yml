@@ -3,7 +3,8 @@ name: Build and Release
 on:
   push:
     tags:
-      - "v*" 
+      - "v*"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -11,6 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, macos-latest]
+        arch: [amd64, arm64]
 
     steps:
       - name: Check out the code
@@ -19,7 +21,17 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: "1.22" 
+          go-version: "1.22"
+
+      - name: Cache Go modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
       - name: Install Fyne CLI
         run: go install fyne.io/fyne/v2/cmd/fyne@latest
@@ -27,41 +39,29 @@ jobs:
       - name: Build the application
         env:
           GOOS: ${{ matrix.os == 'windows-latest' && 'windows' || 'darwin' }}
-          GOARCH: ${{ matrix.os == 'windows-latest' && 'amd64' || 'arm64' }}
+          GOARCH: ${{ matrix.arch }}
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            fyne package -os windows -name "HotelParse.exe"
+            fyne package -os windows -icon "icon.ico" -name "HotelParse.exe"
           else
-            fyne package -os darwin -name "HotelParse.app"
+            fyne package -os darwin -icon "icon.png" -name "HotelParse.app"
           fi
 
-      - name: Create DMG (for macOS only)
-        if: matrix.os == 'macos-latest'
+      - name: Archive the build
         run: |
-          mkdir dmg-folder
-          mv HotelParse.app dmg-folder/
-          hdiutil create HotelParse-macOS.dmg -srcfolder dmg-folder -ov -format UDZO
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            zip -r HotelParse-Windows-${{ matrix.arch }}.zip HotelParse.exe
+          else
+            zip -r HotelParse-macOS-${{ matrix.arch }}.zip HotelParse.app
+          fi
         shell: bash
 
-      - name: Archive Windows executable
-        if: matrix.os == 'windows-latest'
-        run: |
-          zip HotelParse-Windows.zip HotelParse.exe
-        shell: bash
-
-      - name: Upload release asset (macOS)
-        if: matrix.os == 'macos-latest'
+      - name: Upload release asset
         uses: actions/upload-artifact@v2
         with:
-          name: HotelParse-macOS
-          path: HotelParse-macOS.dmg
-
-      - name: Upload release asset (Windows)
-        if: matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v2
-        with:
-          name: HotelParse-Windows
-          path: HotelParse-Windows.zip
+          name: ${{ matrix.os }}-${{ matrix.arch }}
+          path: |
+            HotelParse-*.zip
 
   release:
     needs: build
@@ -70,20 +70,22 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v2
         with:
-          name: HotelParse-Windows
-          path: ./release
+          name: windows-latest-amd64
+          path: ./release/windows-amd64
+        if: matrix.os == 'windows-latest' && matrix.arch == 'amd64'
 
-      - name: Download artifacts (macOS)
+      - name: Download artifacts
         uses: actions/download-artifact@v2
         with:
-          name: HotelParse-macOS
-          path: ./release
+          name: macos-latest-arm64
+          path: ./release/macos-arm64
+        if: matrix.os == 'macos-latest' && matrix.arch == 'arm64'
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ./release/HotelParse-Windows.zip
-            ./release/HotelParse-macOS.dmg
+            ./release/windows-amd64/HotelParse-Windows-amd64.zip
+            ./release/macos-arm64/HotelParse-macOS-arm64.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
