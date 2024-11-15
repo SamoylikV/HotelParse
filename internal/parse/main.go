@@ -152,6 +152,5 @@ func Info(resultID string) (map[string]string, error) {
 		"L": classInfo.CategoryStars,
 		"M": classInfo.InfoAccredOrganization.AccredOrganizationShortName,
 		"N": strconv.Itoa(roomCount),
-		"O": strconv.Itoa(roomCount),
 	}, nil
 }

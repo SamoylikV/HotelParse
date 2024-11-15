@@ -81,6 +81,9 @@ func (app_ *MyApp) startProcessing() {
 func (app_ *MyApp) ProcessData(infoArray *[]map[string]string, mu *sync.Mutex) {
 	var wg sync.WaitGroup
 	progressChan := make(chan int, app_.N)
+	dataChan := make(chan int, 100)
+	numWorkers := 50
+
 	go func() {
 		completed := 0
 		for range progressChan {
@@ -88,26 +91,35 @@ func (app_ *MyApp) ProcessData(infoArray *[]map[string]string, mu *sync.Mutex) {
 			app_.UpdateProgress(completed, app_.N)
 		}
 	}()
-	for i := app_.startID; i < app_.startID+app_.N; i++ {
+
+	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
-		go func(num int) {
+		go func() {
 			defer wg.Done()
-			id, err := parse.Id(num)
-			if err != nil {
+			for num := range dataChan {
+				id, err := parse.Id(num)
+				if err != nil {
+					progressChan <- 1
+					continue
+				}
+				dict, err := parse.Info(id)
+				if err != nil {
+					progressChan <- 1
+					continue
+				}
+				mu.Lock()
+				*infoArray = append(*infoArray, dict)
+				mu.Unlock()
 				progressChan <- 1
-				return
 			}
-			dict, err := parse.Info(id)
-			if err != nil {
-				progressChan <- 1
-				return
-			}
-			mu.Lock()
-			*infoArray = append(*infoArray, dict)
-			mu.Unlock()
-			progressChan <- 1
-		}(i)
+		}()
 	}
+
+	for i := app_.startID; i < app_.startID+app_.N; i++ {
+		dataChan <- i
+	}
+	close(dataChan)
+
 	wg.Wait()
 	close(progressChan)
 }
