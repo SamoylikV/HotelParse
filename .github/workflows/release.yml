@@ -11,8 +11,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [windows-latest, macos-latest]
-        arch: [amd64, arm64]
+        os: [windows-latest]
+        arch: [amd64]
 
     steps:
       - name: Check out the code
@@ -43,8 +43,6 @@ jobs:
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
             fyne package -os windows -icon "assets/Icon.png" -name "HotelParse.exe"
-          else
-            fyne package -os darwin -icon "assets/Icon.png" -name "HotelParse.app"
           fi
         shell: /usr/bin/bash -e {0}
 
@@ -52,8 +50,6 @@ jobs:
         run: |
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
             zip -r HotelParse-Windows-${{ matrix.arch }}.zip HotelParse.exe
-          else
-            zip -r HotelParse-macOS-${{ matrix.arch }}.zip HotelParse.app
           fi
         shell: bash
 
@@ -75,18 +71,10 @@ jobs:
           path: ./release/windows-amd64
         if: matrix.os == 'windows-latest' && matrix.arch == 'amd64'
 
-      - name: Download artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: macos-latest-arm64
-          path: ./release/macos-arm64
-        if: matrix.os == 'macos-latest' && matrix.arch == 'arm64'
-
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
             ./release/windows-amd64/HotelParse-Windows-amd64.zip
-            ./release/macos-arm64/HotelParse-macOS-arm64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
