@@ -35,3 +35,4 @@
 
 *.circleci/
 .gitlab-ci.yml
+.DS_Store
